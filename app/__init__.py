@@ -10,8 +10,10 @@ if not os.path.exists(Config.UPLOAD_FOLDER):
 def create_server():
     server = Server()
 
-    import app.controllers as controls
+    import app.http_controllers   as http_controls
+    import app.socket_controllers as sock_controls
 
-    server.app.register_blueprint(controls.routes_module)
+    server.app.register_blueprint(http_controls.routes_module)
+    sock_controls.init_events(server.socket)
     
     return server
