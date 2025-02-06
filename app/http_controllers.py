@@ -3,6 +3,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
 
+from app.file_storage import video_storage
 from app.config import *
 from app.utils import is_correct_filename
 
