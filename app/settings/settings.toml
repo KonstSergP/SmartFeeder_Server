@@ -8,7 +8,6 @@ allowed_extensions = ["mp4", "avi", "mov"]
 
 
 rtp_port = 8000
-rtp_path = "picam/stream"
 
 
 log_level = "DEBUG"
@@ -18,3 +17,5 @@ log_format = "%(asctime)s - %(levelname)s - %(message)s"
 server_port = 5000
 server_host = "0.0.0.0"
 
+feeder_type = "feeder"
+client_type = "client"

@@ -1,10 +1,11 @@
 import logging
 import sys
+from os.path import join
 from dynaconf import Dynaconf
 
 
 settings = Dynaconf(
-    settings_files=["./app/settings/settings.toml"]
+    settings_files=[join("app", "settings", "settings.toml")]
 )
 
 

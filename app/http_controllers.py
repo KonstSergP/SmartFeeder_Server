@@ -1,5 +1,5 @@
 from flask import request, send_from_directory, jsonify, Blueprint
-
+from os.path import join
 from app.storage import video_storage
 from app.settings.config import *
 
@@ -14,12 +14,15 @@ def upload_video():
 
     video = request.files["video"]
     if video.filename == "":
+        log.debug("No file")
         return jsonify({"error": "No selected file"}), 400
 
     try:
-        video_url = video_storage.store(video, request.headers["id"])
-        return jsonify({"message": "Video uploaded successfully", "url": video_url}), 200
+        video_path = video_storage.store(video, request.headers["id"])
+        log.debug("Uploaded successfully")
+        return jsonify({"message": "Video uploaded successfully", "path": video_path}), 200
     except:
+        log.debug("Invalid file", exc_info=True)
         return jsonify({"error": "Invalid file"}), 400
 
 
@@ -29,9 +32,9 @@ def list_videos():
     return jsonify(videos), 200
 
 
-@routes_module.route(f"/{settings.upload_folder}/<path:subpath>", methods=["GET"])
+@routes_module.route(f"/video/<path:subpath>", methods=["GET"])
 def get_video(subpath):
     try:
-        return send_from_directory(f"../{settings.upload_folder}", subpath)
+        return send_from_directory(join("..", f"{settings.upload_folder}"), subpath)
     except FileNotFoundError:
         return jsonify({"error": "Video not found"}), 404

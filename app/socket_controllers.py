@@ -20,22 +20,22 @@ def disconnection_handler(reason):
 
 def stream_start_handler(data):
     try:
-        conn_handler.start_stream(data["id"])
-        log.debug(f"started stream from {data["id"]}")
-        return "stream started"
+        conn_handler.join_stream(feeder_id=data["feeder_id"], client_sid=request.sid)
+        log.debug(f"joined to stream  {data["feeder_id"]}")
+        return {"success": True, "path": f"picam/{data["feeder_id"]}"}
     except:
-        log.debug(f"failed to start stream from {data["id"]}")
-        return "failed to start stream"
+        log.debug(f"failed to join stream from {data["feeder_id"]}", exc_info=True)
+        return {"success": False}
 
 
 def stream_stop_handler(data):
     try:
-        conn_handler.stop_stream(data["id"])
-        log.debug(f"stopped stream from {data["id"]}")
-        return "stream stopped"
+        conn_handler.leave_stream(feeder_id=data["feeder_id"], client_sid=request.sid)
+        log.debug(f"left from stream {data["feeder_id"]}")
+        return {"success": True}
     except:
-        log.debug(f"failed to stop stream from {data["id"]}")
-        return "failed to stop stream"
+        log.debug(f"failed to leave stream from {data["feeder_id"]}", exc_info=True)
+        return {"success": False}
 
 
 def init_events(socketio):
