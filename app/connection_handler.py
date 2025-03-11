@@ -1,5 +1,6 @@
 from flask_socketio import call, emit, join_room, leave_room
 from app.storage import Database
+import uuid
 from app.settings.config import *
 
 
@@ -162,3 +163,7 @@ class ConnectionHandler:
                 log.debug(f"Остановлен стрим {feeder_id} - нет зрителей")
             except Exception as e:
                 log.debug(f"Ошибка остановки стрима {feeder_id}: {e}")
+
+
+    def generate_new_id(self):
+        return str(uuid.uuid4())

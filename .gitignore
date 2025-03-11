@@ -3,3 +3,4 @@ __pycache__
 videos
 .venv
 *.db
+test_client.py

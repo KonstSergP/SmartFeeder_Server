@@ -1,5 +1,5 @@
 from flask import request
-
+from flask_socketio import emit
 from app.connection_handler import ConnectionHandler
 from app.settings.config import *
 
@@ -7,10 +7,14 @@ from app.settings.config import *
 conn_handler = ConnectionHandler()
 
 
-def connection_handler():
-    headers = request.headers
-    conn_handler.connect(headers["type"], request.sid, headers["id"])
-    log.debug(f"Connected: {headers["type"]}, {headers["id"]}, {request.sid}")
+def connection_handler(auth):
+    if "id" not in auth and "need id" in auth:
+        new_id = conn_handler.generate_new_id()
+        emit("assign id", {"id": new_id})
+        auth["id"] = new_id
+
+    conn_handler.connect(auth["type"], request.sid, auth["id"])
+    log.debug(f"Connected: {auth["type"]}, {auth["id"]}, {request.sid}")
 
 
 def disconnection_handler(reason):

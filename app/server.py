@@ -35,5 +35,5 @@ def create_server():
     server.register_http_routes()
     server.register_socket_routes()
     server.init_db()
-    
+
     return server
