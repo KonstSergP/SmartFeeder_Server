@@ -1,15 +1,31 @@
 from flask_socketio import call, emit, join_room, leave_room
 from app.storage import Database
 import uuid
+from typing import Optional
 from app.settings.config import *
 
 
 class ConnectionHandler:
-    
+    """
+    Manages the connections of feeders and clients.
+    This class handles:
+    - Connection and disconnection of feeders and clients
+    - Stream management (starting/stopping video streams)
+    - Viewer management (joining/leaving streams)
+    - Room-based communication
+    """
+
     def __init__(self): ...
 
 
-    def connect(self, type, sid, id):
+    def connect(self, type: str, sid: str, id: str) -> None:
+        """
+        Register a new connection in the database.
+        Args:
+            type: The connection type ('feeder' or 'client')
+            sid: The SocketIO session ID
+            id: The unique identifier for the feeder or client
+        """
         if type == settings.feeder_type:
             Database.execute("""
                             INSERT INTO Feeders(id, session_id)
@@ -29,7 +45,14 @@ class ConnectionHandler:
             raise ValueError(f"Unknown type: {type}")
 
 
-    def disconnect(self, sid):
+    def disconnect(self, sid: str) -> None:
+        """
+        Handle a disconnection event by cleaning up database entries.
+        For feeders: Removes all stream viewers
+        For clients: Removes them from any streams they were viewing
+        Args:
+            sid: The SocketIO session ID being disconnected
+        """
         feeder_id = Database.select("""
                                 SELECT id FROM Feeders
                                 WHERE session_id=?;
@@ -74,7 +97,8 @@ class ConnectionHandler:
 
 
 
-    def get_feeder(self, id):
+    def get_feeder(self, id: str) -> str:
+        """Get the session ID for a feeder by its unique identifier."""
         sid =   Database.select("""
                                 SELECT session_id FROM Feeders
                                 WHERE id=?;
@@ -82,7 +106,8 @@ class ConnectionHandler:
         return sid[0]
 
 
-    def start_stream(self, id):
+    def start_stream(self, id: str) -> None:
+        """Request a feeder to start streaming video."""
         ret = call("stream start",
                 {"port": settings.rtp_port},
                 to=self.get_feeder(id),
@@ -91,15 +116,23 @@ class ConnectionHandler:
             raise RuntimeError(f"{ret["Error"]} returned, \"stream started\" expected")
 
 
-    def stop_stream(self, id):
+    def stop_stream(self, id: str) -> None:
+        """Request a feeder to stop streaming video."""
         ret = call("stream stop",
                 to=self.get_feeder(id),
                 timeout=15)
         if not ret["success"]:
             raise RuntimeError(f"{ret["Error"]} returned, \"stream stopped\" expected")
-    
-    
-    def join_stream(self, feeder_id, client_sid):
+
+
+    def join_stream(self, feeder_id: str, client_sid: str) -> None:
+        """
+        Add a client to a feeder's video stream.
+        If this is the first viewer, the stream will be started automatically.
+        Args:
+            feeder_id: The feeder's unique identifier
+            client_sid: The client's Socket.IO session ID
+        """
         viewers = Database.select("""
                                     SELECT COUNT(*) FROM StreamViewers
                                     WHERE feeder_id=?;
@@ -108,12 +141,12 @@ class ConnectionHandler:
         if not viewers:
             self.start_stream(feeder_id)
             log.info(f"Запущен стрим {feeder_id}")
-        
+
         client_id = Database.select("""
                                     SELECT id FROM Clients
                                     WHERE session_id=?;
                                     """, (client_sid,), one=True)[0]
-        
+
         Database.execute("""
                         INSERT OR IGNORE INTO StreamViewers(client_id, feeder_id)
                         VALUES(?, ?)
@@ -121,10 +154,14 @@ class ConnectionHandler:
         
         join_room(f"stream_{feeder_id}", client_sid)
         log.debug(f"{client_id} подключился к стриму {feeder_id}")
-            
-    
-    
-    def leave_stream(self, feeder_id=None, client_id=None, client_sid=None):
+
+
+    def leave_stream(self, feeder_id: Optional[str]=None, client_id: Optional[str]=None, client_sid: Optional[str]=None) -> None:
+        """
+        Remove a client from a feeder's video stream.
+        Must be called with either client id or client session id,
+        and feeder id is optional
+        """
         if not client_id:
             client_id = Database.select("""
                                         SELECT id FROM Clients
@@ -152,7 +189,11 @@ class ConnectionHandler:
             self.check_stream(feeder_id)
 
 
-    def check_stream(self, feeder_id):
+    def check_stream(self, feeder_id: str) -> None:
+        """
+        Check if a stream has any viewers and stop it if none.
+        This function is called to determine if the stream should be stopped.
+        """
         viewers = Database.select("""
                                     SELECT COUNT(*) FROM StreamViewers
                                     WHERE feeder_id=?;
@@ -165,5 +206,6 @@ class ConnectionHandler:
                 log.debug(f"Ошибка остановки стрима {feeder_id}: {e}")
 
 
-    def generate_new_id(self):
+    def generate_new_id(self) -> str:
+        """Generate new unique identifier"""
         return str(uuid.uuid4())

@@ -1,17 +1,33 @@
 import sqlite3
+from flask import Flask
+from sqlite3 import Connection
+from typing import Tuple, Any, Union, Optional
 from flask import g
 from ..settings.config import *
 
 
-
 class Database():
-    
+    """
+    Database class that provides a simplified interface to SQLite3.
+    Uses Flask's application context to manage database connections.
+    """
+    QueryArgs = Union[Tuple[Any, ...], Tuple[()]] # For type hinting
+
+
     @staticmethod
-    def init(app):
+    def init(app: Flask) -> None:
+        """
+        Initialize the database
+        Args:
+            app: Flask application instance
+        This method:
+        1. Registers the close_connection function to run when app context ends
+        2. Executes schema.sql
+        """
         log.info("Init database")
-        
+
         app.teardown_appcontext(Database.close_connection)
-        
+
         with app.app_context():
             db = Database.get_db()
             with app.open_resource("storage/schema.sql", mode="r") as f:
@@ -20,7 +36,13 @@ class Database():
 
 
     @staticmethod
-    def get_db():
+    def get_db() -> Connection:
+        """
+        Get a database connection
+        Returns:
+            conn: SQLite database connection object
+        The connection is stored in Flask's g object
+        """
         db = getattr(g, "_database", None)
         if db is None:
             db = g._database = sqlite3.connect(settings.database_path)
@@ -29,14 +51,28 @@ class Database():
 
 
     @staticmethod
-    def close_connection(exception):
+    def close_connection(exception: Optional[Exception]) -> None:
+        """
+        Close the database connection when the application context ends.
+        Args:
+            exception: Exception that might have been raised during request, may be None
+        """
         db = getattr(g, "_database", None)
         if db is not None:
             db.close()
 
 
     @staticmethod
-    def select(query, args=(), one=False):
+    def select(query: str, args: QueryArgs=(), one: bool=False):
+        """
+        Execute a SELECT query and return the results.
+        Args:
+            query: SQL query string
+            args: Query parameters
+            one: If True, returns only the first element or None
+        Returns:
+            Either a single row (if one=True) or a list of rows
+        """
         log.debug("db_select")
         cur = Database.get_db().execute(query, args)
         rv = cur.fetchall()
@@ -44,8 +80,17 @@ class Database():
     
     
     @staticmethod
-    def delete(query, args=(), returning=False):
-        log.debug("delete_db")
+    def delete(query: str, args: QueryArgs=(), returning: bool=False):
+        """
+        Execute a DELETE query.
+        Args:
+            query: SQL query string
+            args: Query parameters
+            returning: If True, returns any values specified by RETURNING clause
+        Returns:
+            Query results if returning=True, otherwise None
+        """
+        log.debug("delete db query")
         db = Database.get_db()
         cur = db.cursor()
         cur.execute(query, args)
@@ -56,7 +101,14 @@ class Database():
 
 
     @staticmethod
-    def execute(query, args=()):
+    def execute(query: str, args: QueryArgs=()):
+        """
+        Execute any SQL query (typically INSERT, UPDATE, etc.).
+        Commits the transaction.
+        Args:
+            query: SQL query string
+            args: Query parameters
+        """
         log.debug("db_execute")
         db = Database.get_db()
         cur = db.cursor()
