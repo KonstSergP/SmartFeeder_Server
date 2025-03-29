@@ -26,7 +26,7 @@ def upload_video():
     try:
         id = request.form.to_dict(flat=True)["id"]
         video_path = video_storage.store(video, id)
-        log.debug("Uploaded successfully, id={id}")
+        log.debug(f"Uploaded successfully, id={id}")
         return jsonify({"message": "Video uploaded successfully", "path": video_path}), 200
     except:
         log.debug("Invalid file", exc_info=True)
