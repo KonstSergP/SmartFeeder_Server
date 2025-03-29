@@ -114,3 +114,12 @@ class Database():
         cur = db.cursor()
         cur.execute(query, args)
         db.commit()
+
+
+    @staticmethod
+    def get_all_active_feeders() -> list[str]:
+        feeders = Database.select("""
+                              SELECT id FROM Feeders
+                              WHERE session_id IS NOT NULL;
+                              """)
+        return [feeder["id"] for feeder in feeders]

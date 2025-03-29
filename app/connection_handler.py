@@ -73,7 +73,7 @@ class ConnectionHandler:
                             """, (sid,))
 
             emit("stream stopped", {"feeder_id": feeder_id}, to=f"stream_{feeder_id}")
-            log.debug(f"Кормушка {feeder_id} отключена")
+            log.debug(f"Feeder {feeder_id} disconnected")
 
 
         else:
@@ -93,7 +93,7 @@ class ConnectionHandler:
                                 WHERE session_id=?
                                 """, (sid,))
 
-                log.debug(f"Пользователь {client_id} отключен")
+                log.debug(f"User {client_id} disconnected")
 
 
 
@@ -140,7 +140,7 @@ class ConnectionHandler:
 
         if not viewers:
             self.start_stream(feeder_id)
-            log.info(f"Запущен стрим {feeder_id}")
+            log.info(f"Started stream from {feeder_id}")
 
         client_id = Database.select("""
                                     SELECT id FROM Clients
@@ -153,7 +153,7 @@ class ConnectionHandler:
                         """, (client_id, feeder_id))
         
         join_room(f"stream_{feeder_id}", client_sid)
-        log.debug(f"{client_id} подключился к стриму {feeder_id}")
+        log.debug(f"{client_id} joined to stream from {feeder_id}")
 
 
     def leave_stream(self, feeder_id: Optional[str]=None, client_id: Optional[str]=None, client_sid: Optional[str]=None) -> None:
@@ -184,7 +184,7 @@ class ConnectionHandler:
                             DELETE FROM StreamViewers
                             WHERE feeder_id=? AND client_id=?
                             """, (feeder_id, client_id))
-            log.debug(f"{client_id} покинул стрим {feeder_id}")
+            log.debug(f"{client_id} left stream from {feeder_id}")
             leave_room(f"stream_{feeder_id}", client_sid)
             self.check_stream(feeder_id)
 
@@ -201,9 +201,9 @@ class ConnectionHandler:
         if not viewers:
             try:
                 self.stop_stream(feeder_id)
-                log.debug(f"Остановлен стрим {feeder_id} - нет зрителей")
+                log.debug(f"Stopped stream from {feeder_id} - no watchers")
             except Exception as e:
-                log.debug(f"Ошибка остановки стрима {feeder_id}: {e}")
+                log.debug(f"Error stopping stream {feeder_id}: {e}")
 
 
     def generate_new_id(self) -> str:

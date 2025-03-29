@@ -1,6 +1,6 @@
 from flask import request, send_from_directory, jsonify, Blueprint
 from os.path import join
-from app.storage import video_storage
+from app.storage import video_storage, Database
 from app.settings.config import *
 
 
@@ -53,3 +53,11 @@ def get_video(subpath):
     except FileNotFoundError:
         log.error(f"not found file {subpath}")
         return jsonify({"error": "Video not found"}), 404
+
+
+@routes_module.route("/feeders", methods=["GET"])
+def list_feeders():
+    """Get list of all connected feeders."""
+    feeders = Database.get_all_active_feeders()
+    log.debug(f"Returning connected feeders list: {len(feeders)} feeders")
+    return jsonify(feeders), 200
