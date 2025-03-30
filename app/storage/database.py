@@ -51,7 +51,7 @@ class Database():
 
 
     @staticmethod
-    def close_connection(exception: Optional[Exception]) -> None:
+    def close_connection(exception: Optional[Exception]=None) -> None:
         """
         Close the database connection when the application context ends.
         Args:

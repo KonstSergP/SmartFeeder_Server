@@ -4,3 +4,7 @@ videos
 .venv
 *.db
 test_client.py
+.vscode
+.pytest_cache
+.coverage
+*.log
