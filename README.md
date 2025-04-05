@@ -10,6 +10,7 @@ SmartFeeder - это программа, реализующая функцион
 - Gunicorn/Eventlet: WSGI-сервер с поддержкой Socket.IO
 
 
+
 ### Установка
 ```
 git clone https://github.com/KonstSergP/SmartFeeder_Server.git
@@ -19,9 +20,29 @@ cd SmartFeeder_Server
 make install
 ```
 
+#### Для использования трансляций необходимо установить nginx
+```
+sudo apt install
+sudo apt upgrade
+
+wget https://nginx.org/download/nginx-1.24.0.tar.gz
+tar zxf nginx-1.24.0.tar.gz
+git clone https://github.com/arut/nginx-rtmp-module.git
+
+cd nginx-1.24.0
+./configure —add-module=./nginx-rtmp-module
+make
+make install
+sudo ln -f app/settings/nginx.conf $/usr/local/nginx/conf/nginx.conf
+```
+
+
 ### Запуск
 
 ```
+# Запустить nginx
+sudo /usr/local/nginx/sbin/nginx
+
 # Запустить
 make run
 

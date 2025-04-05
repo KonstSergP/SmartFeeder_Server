@@ -5,13 +5,18 @@ PIP := $(VENV)/bin/pip
 PYTEST := $(VENV)/bin/pytest
 COVERAGE := $(VENV)/bin/coverage
 GUNICORN := $(VENV)/bin/gunicorn
+NGINX := /usr/local/nginx
 
 
 .PHONY: all install run gunicorn coverage clean deepclean
 all: install coverage
 
 
-install:
+install: python
+
+python:
+	sudo apt-get install python3-venv
+	sudo apt install python3-pip
 	python3 -m venv $(VENV)
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
@@ -29,7 +34,6 @@ gunicorn:
 coverage:
 	$(COVERAGE) run --rcfile=app/settings/.coveragerc -m pytest -v
 	$(COVERAGE) report
-	$(COVERAGE) html
 
 
 clean:
@@ -46,6 +50,7 @@ clean:
 	@rm -f */*/*/*.pyc
 	@rm -f *.log
 	@rm -f api-error.log
+	@rm -rf nginx*
 
 
 deepclean: clean
