@@ -48,7 +48,7 @@ sudo /usr/local/nginx/sbin/nginx
 make run
 
 # Запустить с использованием gunicorn
-make preview
+make gunicorn
 
 # Запустить вручную
 python main.py
