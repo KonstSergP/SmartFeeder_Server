@@ -5,6 +5,7 @@ PIP := $(VENV)/bin/pip
 PYTEST := $(VENV)/bin/pytest
 COVERAGE := $(VENV)/bin/coverage
 GUNICORN := $(VENV)/bin/gunicorn
+GUNICORN_PID := /tmp/gunicorn
 NGINX := /usr/local/nginx
 
 
@@ -28,7 +29,10 @@ run:
 
 
 gunicorn:
-	$(GUNICORN) -c app/settings/gunicorn.py
+	$(GUNICORN) -c app/settings/gunicorn.py --pid $(GUNICORN_PID)
+
+stop_gunicorn:
+	kill $$(cat GUNICORN_PID)
 
 
 coverage:
