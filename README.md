@@ -34,7 +34,7 @@ cd nginx-1.24.0
 make
 make install
 cd ..
-sudo ln -f app/settings/nginx.conf $/usr/local/nginx/conf/nginx.conf
+sudo ln -f app/settings/nginx.conf /usr/local/nginx/conf/nginx.conf
 ```
 
 
