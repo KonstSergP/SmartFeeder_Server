@@ -33,6 +33,7 @@ cd nginx-1.24.0
 ./configure —add-module=./nginx-rtmp-module
 make
 make install
+cd ..
 sudo ln -f app/settings/nginx.conf $/usr/local/nginx/conf/nginx.conf
 ```
 
