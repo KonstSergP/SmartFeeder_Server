@@ -8,3 +8,5 @@ test_client.py
 .pytest_cache
 .coverage
 *.log
+*.out
+

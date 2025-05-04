@@ -1,3 +1,4 @@
+
 from os import listdir, makedirs
 from os.path import join, exists
 from datetime import datetime
@@ -60,8 +61,9 @@ class VideoStorage:
         for directory in listdir(settings.upload_folder):
             # Iterate through all files in each folder
             for filename in listdir(join(settings.upload_folder, directory)):
+                ip_addr = request.headers.get("Host")
                 videos.append({
                     "filename": filename,
-                    "url": f"{request.host_url}video/{join(directory, filename)}"
+                    "url": f"http://{ip_addr if ip_addr else "localhost"}/video/{join(directory, filename)}"
                 })
         return videos

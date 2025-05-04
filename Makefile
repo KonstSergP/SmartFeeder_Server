@@ -32,7 +32,7 @@ gunicorn:
 	$(GUNICORN) -c app/settings/gunicorn.py --pid $(GUNICORN_PID)
 
 stop_gunicorn:
-	kill $$(cat GUNICORN_PID)
+	kill $$(cat $(GUNICORN_PID))
 
 
 coverage:
